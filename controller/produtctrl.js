@@ -2,7 +2,9 @@ const Product = require("../models/productModel");
 const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
-
+const cloudinaryUploadImg = require("../utils/cloudinary");
+const { mongoValidateId } = require("../utils/validateMongoDB");
+const fs = require("fs");
 //create Product
 const createProduct = asyncHandler(async (req, res) => {
   try {
@@ -20,6 +22,7 @@ const createProduct = asyncHandler(async (req, res) => {
 //update a Product
 const updateSingleProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  mongoValidateId(id);
   try {
     if (req.body.title) {
       req.body.slug = slugify(req.body.title);
@@ -36,6 +39,7 @@ const updateSingleProduct = asyncHandler(async (req, res) => {
 //delete Product
 const deleteSingleProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  mongoValidateId(id);
   try {
     const deleteProduct = await Product.findOneAndDelete(id);
     res.json(deleteProduct);
@@ -47,6 +51,7 @@ const deleteSingleProduct = asyncHandler(async (req, res) => {
 //get singleproduct by id
 const getSingleProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
+  mongoValidateId(id);
   try {
     const findProductById = await Product.findById(id);
     res.json(findProductById);
@@ -108,6 +113,7 @@ const getAllProducts = asyncHandler(async (req, res) => {
 const addToWishList = asyncHandler(async (req, res) => {
   const { id } = req.user;
   const { productId } = req.body;
+  mongoValidateId(id);
   try {
     const user = await User.findById(id);
 
@@ -146,7 +152,8 @@ const addToWishList = asyncHandler(async (req, res) => {
 //rating
 const rating = asyncHandler(async (req, res) => {
   const { id } = req.user;
-  const { productId, star ,comment} = req.body;
+  const { productId, star, comment } = req.body;
+  mongoValidateId(id);
   try {
     const product = await Product.findById(productId);
     let alreadyRated = product.ratings.find(
@@ -158,13 +165,12 @@ const rating = asyncHandler(async (req, res) => {
           ratings: { $elemMatch: alreadyRated },
         },
         {
-          $set: { "ratings.$.star": star ,"ratings.$.comment": comment},
+          $set: { "ratings.$.star": star, "ratings.$.comment": comment },
         },
         {
           new: true,
         }
       );
-      
     } else {
       const rateProduct = await Product.findByIdAndUpdate(
         productId,
@@ -172,7 +178,7 @@ const rating = asyncHandler(async (req, res) => {
           $push: {
             ratings: {
               star: star,
-              comment:comment,
+              comment: comment,
               postedBy: id,
             },
           },
@@ -181,7 +187,6 @@ const rating = asyncHandler(async (req, res) => {
           new: true,
         }
       );
-      
     }
     const getAllRating = await Product.findById(productId);
     let totalRating = getAllRating.ratings.length;
@@ -205,8 +210,34 @@ const rating = asyncHandler(async (req, res) => {
 });
 
 //upload images
-const uploadImages = asyncHandler(async (req,res)=>{
-  console.log(req.files);
+const uploadImages = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  mongoValidateId(id);
+  try {
+    const uploader = (path) => cloudinaryUploadImg(path, "images");
+    urls = [];
+    const files = req.files;
+    for (const file of files) {
+      const { path } = file;
+      const newpath = await uploader(path);
+      urls.push(newpath);
+      fs.unlinkSync(path);
+    }
+    const findProduct = await Product.findByIdAndUpdate(
+      id,
+      {
+        images: urls.map((file) => {
+          return file;
+        }),
+      },
+      {
+        new: true,
+      }
+    );
+    res.json(findProduct);
+  } catch (error) {
+    throw new Error(error);
+  }
 });
 
 module.exports = {

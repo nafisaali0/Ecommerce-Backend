@@ -15,11 +15,11 @@ const router = express.Router();
 
 router.post("/", authMiddleware, isAdmin, createProduct);
 router.put(
-  "upload/:id",
+  "/upload/:id",
   authMiddleware,
   isAdmin,
-  // uploadPhoto.array("images",10),
-  // productImageResize,
+  uploadPhoto.array("images",10),
+  productImageResize,
   uploadImages
 );
 router.get("/:id", getSingleProduct);

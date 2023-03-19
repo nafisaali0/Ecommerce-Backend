@@ -1,7 +1,8 @@
 const Blog = require("../models/blogsModel");
-const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 const { mongoValidateId } = require("../utils/validateMongoDB");
+const cloudinaryUploadImg = require("../utils/cloudinary");
+const fs = require("fs");
 
 //create new blog
 const createBlog = asyncHandler(async (req, res) => {
@@ -73,7 +74,6 @@ const deleteSingleBlog = asyncHandler(async (req, res) => {
 //like blog
 const likeBlog = asyncHandler(async (req, res) => {
   const { blogId } = req.body;
-  console.log(blogId);
   
   mongoValidateId(blogId);
 
@@ -184,6 +184,37 @@ const dislikeBlog = asyncHandler(async (req, res) => {
   }
 });
 
+//upload images
+const uploadImages = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  mongoValidateId(id);
+  try {
+    const uploader = (path) => cloudinaryUploadImg(path, "images");
+    urls = [];
+    const files = req.files;
+    for (let file of files) {
+      const { path } = file;
+      const newpath = await uploader(path);
+      urls.push(newpath);
+      fs.unlinkSync(path);
+    }
+    const findBlog = await Blog.findByIdAndUpdate(
+      id,
+      {
+        images: urls.map((file) => {
+          return file;
+        }),
+      },
+      {
+        new: true,
+      }
+    );
+    res.json(findBlog);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 module.exports = {
   createBlog,
   updateSingleBlog,
@@ -192,4 +223,5 @@ module.exports = {
   deleteSingleBlog,
   likeBlog,
   dislikeBlog,
+  uploadImages,
 };

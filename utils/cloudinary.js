@@ -1,4 +1,4 @@
-const cloudinary = require("cloudinary").v2;
+const cloudinary = require("cloudinary");
 
 // Configuration
 cloudinary.config({
@@ -8,13 +8,14 @@ cloudinary.config({
 });
 
 //upload image
-const cloudinaryUpload = async (fileToUpload) => {
+const cloudinaryUploadImg = async (fileToUpload) => {
   return new Promise((resolve) => {
     cloudinary.uploader.upload(fileToUpload, (result) => {
       resolve(
         {
-          url: result.secure_url,
+          url: result?.secure_url,
         },
+        
         {
           resource_type: "auto",
         }
@@ -23,4 +24,4 @@ const cloudinaryUpload = async (fileToUpload) => {
   });
 };
 
-module.exports = cloudinaryUpload;
+module.exports = cloudinaryUploadImg;
