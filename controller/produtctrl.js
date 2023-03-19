@@ -1,4 +1,5 @@
 const Product = require("../models/productModel");
+const User = require("../models/userModel");
 const asyncHandler = require("express-async-handler");
 const slugify = require("slugify");
 
@@ -70,18 +71,18 @@ const getAllProducts = asyncHandler(async (req, res) => {
     let query = Product.find(JSON.parse(queryString));
 
     //Sorting
-    if( req.query.sort){
+    if (req.query.sort) {
       const sortBy = req.query.sort.split(",").join(" ");
-      query = query.sort(sortBy)
-    }else{
-      query = query.sort("-createdAt")
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort("-createdAt");
     }
 
     //Field
-    if(req.query.fields){
+    if (req.query.fields) {
       const fields = req.query.fields.split(",").join(" ");
       query = query.select(fields);
-    }else{
+    } else {
       query = query.select("-__v");
     }
 
@@ -90,9 +91,9 @@ const getAllProducts = asyncHandler(async (req, res) => {
     const limit = req.query.limit;
     const skip = (page - 1) * limit;
     query = query.skip(skip).limit(limit);
-    if(req.query.page){
+    if (req.query.page) {
       const productCount = await Product.countDocuments();
-      if(skip>= productCount) throw new Error("This Page does Not exist");
+      if (skip >= productCount) throw new Error("This Page does Not exist");
     }
 
     const product = await query;
@@ -103,10 +104,118 @@ const getAllProducts = asyncHandler(async (req, res) => {
   }
 });
 
+//add to wishlist
+const addToWishList = asyncHandler(async (req, res) => {
+  const { id } = req.user;
+  const { productId } = req.body;
+  try {
+    const user = await User.findById(id);
+
+    const alreadyAdded = user.wishlist.find(
+      (id) => id.toString() === productId
+    );
+
+    if (alreadyAdded) {
+      let user = await User.findByIdAndUpdate(
+        id,
+        {
+          $pull: { wishlist: productId },
+        },
+        {
+          new: true,
+        }
+      );
+      res.json(user);
+    } else {
+      let user = await User.findByIdAndUpdate(
+        id,
+        {
+          $push: { wishlist: productId },
+        },
+        {
+          new: true,
+        }
+      );
+      res.json(user);
+    }
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//rating
+const rating = asyncHandler(async (req, res) => {
+  const { id } = req.user;
+  const { productId, star ,comment} = req.body;
+  try {
+    const product = await Product.findById(productId);
+    let alreadyRated = product.ratings.find(
+      (userId) => userId.postedBy.toString() === id.toString()
+    );
+    if (alreadyRated) {
+      const updateRating = await Product.updateOne(
+        {
+          ratings: { $elemMatch: alreadyRated },
+        },
+        {
+          $set: { "ratings.$.star": star ,"ratings.$.comment": comment},
+        },
+        {
+          new: true,
+        }
+      );
+      
+    } else {
+      const rateProduct = await Product.findByIdAndUpdate(
+        productId,
+        {
+          $push: {
+            ratings: {
+              star: star,
+              comment:comment,
+              postedBy: id,
+            },
+          },
+        },
+        {
+          new: true,
+        }
+      );
+      
+    }
+    const getAllRating = await Product.findById(productId);
+    let totalRating = getAllRating.ratings.length;
+    let ratingSum = getAllRating.ratings
+      .map((item) => item.star)
+      .reduce((prev, curr) => prev + curr, 0);
+    let actualRating = Math.round(ratingSum / totalRating);
+    let finalRating = await Product.findByIdAndUpdate(
+      productId,
+      {
+        totalrating: actualRating,
+      },
+      {
+        new: true,
+      }
+    );
+    res.json(finalRating);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//upload images
+const uploadImages = asyncHandler(async (req,res)=>{
+  console.log(req.files);
+});
+
 module.exports = {
   createProduct,
   getSingleProduct,
   getAllProducts,
   updateSingleProduct,
   deleteSingleProduct,
+  addToWishList,
+  rating,
+  uploadImages,
 };

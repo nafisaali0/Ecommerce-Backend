@@ -1,7 +1,7 @@
 const mongoose = require("mongoose"); // Erase if already required
 
 // Declare the Schema of the Mongo model
-var productSchema = new mongoose.Schema(
+const productSchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -47,10 +47,18 @@ var productSchema = new mongoose.Schema(
     },
     ratings: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        star: Number,
+        comment:String,
+        postedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
       },
     ],
+    totalrating: {
+      type: String,
+      default: 0,
+    },
   },
   {
     timestamps: true,

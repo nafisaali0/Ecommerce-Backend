@@ -3,9 +3,15 @@ const dbConnect = require("./config/dbConnect");
 const app = express();
 const dotenv = require("dotenv").config();
 const port = process.env.PORT || 4000;
+//routes
 const authRouter = require("./routes/authRoutes");
+const productcatagoryRouter = require("./routes/productRoutes");
 const productRouter = require("./routes/productRoutes");
 const blogRouter = require("./routes/blogsRoutes");
+const blogcatagoryRouter = require("./routes/blogcatagoryRoutes");
+const brandRouter = require("./routes/brandRoutes");
+const couponRouter = require("./routes/couponRoutes");
+
 const bodyParser = require("body-parser");
 const { notFoundError, errorhandler } = require("./middlewares/errorHander");
 const cookieParser = require("cookie-parser");
@@ -20,6 +26,10 @@ app.use(cookieParser());
 app.use("/api/user", authRouter);
 app.use("/api/product", productRouter);
 app.use("/api/blog", blogRouter);
+app.use("/api/product-catagory", productcatagoryRouter);
+app.use("/api/blog-catagory", blogcatagoryRouter);
+app.use("/api/brand", brandRouter);
+app.use("/api/coupon", couponRouter);
 
 app.use(notFoundError);
 app.use(errorhandler);
