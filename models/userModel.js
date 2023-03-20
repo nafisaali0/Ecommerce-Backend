@@ -41,12 +41,9 @@ const userSchema = new mongoose.Schema(
       type: Array,
       default: [],
     },
-    address: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Address",
-      },
-    ],
+    address: {
+      type: String,
+    },
     wishlist: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -81,13 +78,12 @@ userSchema.methods.isPasswordmatched = async function (enterPassword) {
 userSchema.methods.createPasswordResetToken = async function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
   this.passwordResetToken = crypto
-  .createHash("sha256")
-  .update(resetToken)
-  .digest("hex");
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
   this.passwordResetExpired = Date.now() + 30 * 60 * 1000; //10minutes
   return resetToken;
 };
- 
 
 //Export the model
 module.exports = mongoose.model("User", userSchema);

@@ -1,5 +1,7 @@
 const { generateToken } = require("../config/jsonWebToken");
 const User = require("../models/userModel");
+const Product = require("../models/productModel");
+const Cart = require("../models/cartModel");
 const asyncHandler = require("express-async-handler");
 const { mongoValidateId } = require("../utils/validateMongoDB");
 const { genarateeRfreshToken } = require("../config/refreshToken");
@@ -47,6 +49,40 @@ const loginUser = asyncHandler(async (req, res) => {
       email: findUser?.email,
       mobile: findUser?.mobile,
       token: generateToken(findUser?.id),
+    });
+  } else {
+    throw new Error("Invalid credential");
+  }
+});
+
+//login Admin function
+const loginAdmin = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  const findAdmin = await User.findOne({ email: email });
+  if (findAdmin.role !== "admin") throw new Error("Not Authorized");
+  if (findAdmin && (await findAdmin.isPasswordmatched(password))) {
+    const refreshToken = await genarateeRfreshToken(findAdmin?.id);
+    const updateUser = await User.findByIdAndUpdate(
+      findAdmin.id,
+      {
+        refreshToken: refreshToken,
+      },
+      {
+        naw: true,
+      }
+    );
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 72 * 60 * 60 * 1000,
+    });
+
+    res.json({
+      id: findAdmin?.id,
+      firstname: findAdmin?.firstname,
+      lastname: findAdmin?.lastname,
+      email: findAdmin?.email,
+      mobile: findAdmin?.mobile,
+      token: generateToken(findAdmin?.id),
     });
   } else {
     throw new Error("Invalid credential");
@@ -115,6 +151,26 @@ const updateUser = asyncHandler(async (req, res) => {
         lastname: req?.body?.lastname,
         email: req?.body?.email,
         mobile: req?.body?.mobile,
+      },
+      {
+        new: true,
+      }
+    );
+    res.json(UpdateUserInfo);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//save Address
+const saveAddress = asyncHandler(async (req, res) => {
+  const { id } = req.user;
+  mongoValidateId(id);
+  try {
+    const UpdateUserInfo = await User.findByIdAndUpdate(
+      id,
+      {
+        address: req?.body?.address,
       },
       {
         new: true,
@@ -217,6 +273,7 @@ const updatePassword = asyncHandler(async (req, res) => {
   }
 });
 
+//forget password
 const forgetPasswordToken = asyncHandler(async (req, res) => {
   const { email } = req.body;
   const user = await User.findOne({ email });
@@ -259,6 +316,46 @@ const resetPasswordToken = asyncHandler(async (req, res) => {
   res.json(user);
 });
 
+//get all wishlist
+const getWishlist = asyncHandler(async (req, res) => {
+  const { id } = req.user;
+  mongoValidateId(id);
+  try {
+    const findUser = await User.findById(id).populate("wishlist");
+    res.json(findUser);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//user Cart
+const userCart = asyncHandler(async (req, res) => {
+  const { cart } = req.body;
+  const { id } = req?.user;
+  mongoValidateId(id);
+  try {
+    let products = [];
+    const user = await User.findById(id);
+    //check if user is already in cart
+    const aleadyExistCart = await Cart.findOne({ orderBy: user?.id });
+    if (aleadyExistCart) {
+      aleadyExistCart.remove();
+    }
+    for (let i = 0; i < cart.length; i++) {
+      let object = {};
+      object.product = cart[i]?.id;
+      object.count = cart[i].count;
+      object.color = cart[i].color;
+      let getPrice = await Product.findById(cart[i]?.id).select("price").exec();
+      object.price = getPrice.price;
+      products.push(object);
+    }
+    console.log(products);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 module.exports = {
   createUser,
   loginUser,
@@ -273,4 +370,8 @@ module.exports = {
   updatePassword,
   forgetPasswordToken,
   resetPasswordToken,
+  loginAdmin,
+  getWishlist,
+  saveAddress,
+  userCart,
 };
