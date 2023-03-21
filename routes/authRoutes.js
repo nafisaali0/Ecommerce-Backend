@@ -18,6 +18,8 @@ const {
   getWishlist,
   saveAddress,
   userCart,
+  getUserCart,
+  emptyCart,
 } = require("../controller/userCntrl");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 
@@ -28,14 +30,16 @@ router.put("/reset-password/:token", resetPasswordToken);
 router.put("/update-password", authMiddleware, updatePassword);
 router.post("/login", loginUser);
 router.post("/login-admin", loginAdmin);
-router.post("/cart", userCart);
+router.post("/cart", authMiddleware, userCart);
 
 router.get("/all-user", getAllUser);
 router.get("/refresh-token", handleRefreshToken);
 router.get("/logout", logoutUser);
-router.get("/all-wishlist",authMiddleware, getWishlist);
+router.get("/all-wishlist", authMiddleware, getWishlist);
+router.get("/all-cart", authMiddleware, getUserCart);
 router.get("/:id", authMiddleware, isAdmin, getSingleUser);
 
+router.delete("/empty-cart", authMiddleware, emptyCart);
 router.delete("/:id", deleteUser);
 
 router.put("/edit-user", authMiddleware, updateUser);

@@ -8,6 +8,7 @@ const { genarateeRfreshToken } = require("../config/refreshToken");
 const jwt = require("jsonwebtoken");
 const sendEmail = require("./emailCtrl");
 const crypto = require("crypto");
+const { json } = require("body-parser");
 
 //regester new user
 const createUser = asyncHandler(async (req, res) => {
@@ -331,27 +332,67 @@ const getWishlist = asyncHandler(async (req, res) => {
 //user Cart
 const userCart = asyncHandler(async (req, res) => {
   const { cart } = req.body;
-  const { id } = req?.user;
+  const { id } = req.user;
   mongoValidateId(id);
   try {
     let products = [];
     const user = await User.findById(id);
     //check if user is already in cart
-    const aleadyExistCart = await Cart.findOne({ orderBy: user?.id });
-    if (aleadyExistCart) {
-      aleadyExistCart.remove();
-    }
+    const aleadyExistCart = await Cart.findOne({ orderBy: user.id });
+    console.log(aleadyExistCart);
+    // if (aleadyExistCart) {
+    //   aleadyExistCart.remove();
+    // }
     for (let i = 0; i < cart.length; i++) {
       let object = {};
-      object.product = cart[i]?.id;
+      object.product = cart[i].id;
       object.count = cart[i].count;
       object.color = cart[i].color;
-      let getPrice = await Product.findById(cart[i]?.id).select("price").exec();
+      let getPrice = await Product.findById(cart[i].id).select("price").exec();
       object.price = getPrice.price;
       products.push(object);
     }
-    console.log(products);
+    let cartTotal = 0;
+    for (i = 0; i < products.length; i++) {
+      cartTotal = cartTotal + products[i].price * products[i].count;
+    }
+    let newcart = await new Cart({
+      products,
+      cartTotal,
+      orderBy: user.id,
+    }).save();
+    res.json(newcart);
+    console.log(products, cartTotal);
   } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//get all cart
+const getUserCart = asyncHandler(async (req, res) => {
+  const { id } = req.user;
+  mongoValidateId(id);
+  try {
+    const cart = await Cart.findOne({ orderBy: id }).populate(
+      "products.product",
+      // "id title price totalAfterDiscount"
+    );
+    res.json(cart);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+
+//remove from cart
+const emptyCart = asyncHandler(async (req,res)=>{
+  const { _id } = req.user;
+  mongoValidateId(_id);
+  try{
+    const user = await User.findOne({_id});
+    const cart = await Cart.findOneAndRemove({ orderBy: user._id});
+    res.json(cart);
+  }catch (error) {
     throw new Error(error);
   }
 });
@@ -374,4 +415,6 @@ module.exports = {
   getWishlist,
   saveAddress,
   userCart,
+  getUserCart,
+  emptyCart,
 };

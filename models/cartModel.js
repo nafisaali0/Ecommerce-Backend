@@ -11,11 +11,11 @@ const cartSchema = new mongoose.Schema(
         },
         count: Number,
         color: String,
-        price:Number,
+        price: Number,
       },
     ],
     cartTotal: Number,
-    totalAfterDiscount:Number,
+    totalAfterDiscount: Number,
     orderStatus: {
       type: String,
       default: "Not Processed",
