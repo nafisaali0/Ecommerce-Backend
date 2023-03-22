@@ -10,7 +10,9 @@ const productRouter = require("./routes/productRoutes");
 const blogRouter = require("./routes/blogsRoutes");
 const blogcatagoryRouter = require("./routes/blogcatagoryRoutes");
 const brandRouter = require("./routes/brandRoutes");
+const colorRouter = require("./routes/colorRoutes");
 const couponRouter = require("./routes/couponRoutes");
+const enquaryRouter = require("./routes/enqRoutes");
 
 const bodyParser = require("body-parser");
 const { notFoundError, errorhandler } = require("./middlewares/errorHander");
@@ -30,7 +32,9 @@ app.use("/api/blog", blogRouter);
 app.use("/api/product-catagory", productcatagoryRouter);
 app.use("/api/blog-catagory", blogcatagoryRouter);
 app.use("/api/brand", brandRouter);
+app.use("/api/color", colorRouter);
 app.use("/api/coupon", couponRouter);
+app.use("/api/enquary", enquaryRouter);
 
 app.use(notFoundError);
 app.use(errorhandler);
