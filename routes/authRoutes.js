@@ -20,6 +20,10 @@ const {
   userCart,
   getUserCart,
   emptyCart,
+  applyCoupon,
+  craeteOrder,
+  getOrder,
+  updateOrderStatus,
 } = require("../controller/userCntrl");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 
@@ -27,21 +31,26 @@ router.post("/regester", createUser);
 router.post("/forget-password-token", forgetPasswordToken);
 router.put("/reset-password/:token", resetPasswordToken);
 
+
 router.put("/update-password", authMiddleware, updatePassword);
 router.post("/login", loginUser);
 router.post("/login-admin", loginAdmin);
 router.post("/cart", authMiddleware, userCart);
+router.post("/cart/coupon", authMiddleware, applyCoupon);
+router.post("/cart/create-order", authMiddleware, craeteOrder);
 
 router.get("/all-user", getAllUser);
 router.get("/refresh-token", handleRefreshToken);
 router.get("/logout", logoutUser);
 router.get("/all-wishlist", authMiddleware, getWishlist);
 router.get("/all-cart", authMiddleware, getUserCart);
+router.get("/all-order", authMiddleware, getOrder);
 router.get("/:id", authMiddleware, isAdmin, getSingleUser);
 
 router.delete("/empty-cart", authMiddleware, emptyCart);
 router.delete("/:id", deleteUser);
 
+router.put("/order/update-order/:id",authMiddleware, isAdmin, updateOrderStatus);
 router.put("/edit-user", authMiddleware, updateUser);
 router.put("/save-address", authMiddleware, saveAddress);
 router.put("/block-user/:id", authMiddleware, isAdmin, blockUser);
