@@ -68,8 +68,8 @@ const getAllProducts = asyncHandler(async (req, res) => {
   try {
     //Filtering
     const queryObj = { ...req.query };
-    const excludeField = ["page", "sort", "limit", "fields"];
-    excludeField.forEach((el) => delete queryObj[el]);
+    const excludeFields = ["page", "sort", "limit", "fields"];
+    excludeFields.forEach((el) => delete queryObj[el]);
 
     let queryString = JSON.stringify(queryObj);
     queryString = queryString.replace(
@@ -103,9 +103,7 @@ const getAllProducts = asyncHandler(async (req, res) => {
       const productCount = await Product.countDocuments();
       if (skip >= productCount) throw new Error("This Page does Not exist");
     }
-
     const product = await query;
-
     res.json(product);
   } catch (error) {
     throw new Error(error);

@@ -3,6 +3,7 @@ const dbConnect = require("./config/dbConnect");
 const app = express();
 const dotenv = require("dotenv").config();
 const port = process.env.PORT || 4000;
+const cors = require('cors');
 //routes
 const authRouter = require("./routes/authRoutes");
 const productcatagoryRouter = require("./routes/productRoutes");
@@ -24,7 +25,8 @@ app.use(morgan("dev"));
 app.use(bodyParser.json()) // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cookieParser());
-app.use(express.json())
+app.use(express.json());
+app.use(cors());
 
 app.use("/api/user", authRouter);
 app.use("/api/product", productRouter);

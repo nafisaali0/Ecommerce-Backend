@@ -31,7 +31,6 @@ router.post("/regester", createUser);
 router.post("/forget-password-token", forgetPasswordToken);
 router.put("/reset-password/:token", resetPasswordToken);
 
-
 router.put("/update-password", authMiddleware, updatePassword);
 router.post("/login", loginUser);
 router.post("/login-admin", loginAdmin);
@@ -50,7 +49,12 @@ router.get("/:id", authMiddleware, isAdmin, getSingleUser);
 router.delete("/empty-cart", authMiddleware, emptyCart);
 router.delete("/:id", deleteUser);
 
-router.put("/order/update-order/:id",authMiddleware, isAdmin, updateOrderStatus);
+router.put(
+  "/order/update-order/:id",
+  authMiddleware,
+  isAdmin,
+  updateOrderStatus
+);
 router.put("/edit-user", authMiddleware, updateUser);
 router.put("/save-address", authMiddleware, saveAddress);
 router.put("/block-user/:id", authMiddleware, isAdmin, blockUser);
