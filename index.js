@@ -3,10 +3,10 @@ const dbConnect = require("./config/dbConnect");
 const app = express();
 const dotenv = require("dotenv").config();
 const port = process.env.PORT || 4000;
-const cors = require('cors');
+const cors = require("cors");
 //routes
 const authRouter = require("./routes/authRoutes");
-const productcatagoryRouter = require("./routes/productRoutes");
+const productcatagoryRouter = require("./routes/productcatagoryRoutes");
 const productRouter = require("./routes/productRoutes");
 const blogRouter = require("./routes/blogsRoutes");
 const blogcatagoryRouter = require("./routes/blogcatagoryRoutes");
@@ -14,6 +14,7 @@ const brandRouter = require("./routes/brandRoutes");
 const colorRouter = require("./routes/colorRoutes");
 const couponRouter = require("./routes/couponRoutes");
 const enquaryRouter = require("./routes/enqRoutes");
+const uploadRouter = require("./routes/uploadRoutes");
 
 const bodyParser = require("body-parser");
 const { notFoundError, errorhandler } = require("./middlewares/errorHander");
@@ -22,8 +23,8 @@ const morgan = require("morgan");
 dbConnect();
 
 app.use(morgan("dev"));
-app.use(bodyParser.json()) // for parsing application/json
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.json());
 app.use(cors());
@@ -37,6 +38,7 @@ app.use("/api/brand", brandRouter);
 app.use("/api/color", colorRouter);
 app.use("/api/coupon", couponRouter);
 app.use("/api/enquary", enquaryRouter);
+app.use("/api/upload", uploadRouter);
 
 app.use(notFoundError);
 app.use(errorhandler);

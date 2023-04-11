@@ -62,34 +62,32 @@ const loginUser = asyncHandler(async (req, res) => {
 //login Admin function
 const loginAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const findAdmin = await User.findOne({ email: email });
-  if (findAdmin.role !== "admin") throw new Error("Not Authorized");
+  // check if user exists or not
+  const findAdmin = await User.findOne({ email });
+  if (findAdmin.role !== "admin") throw new Error("Not Authorised");
   if (findAdmin && (await findAdmin.isPasswordmatched(password))) {
-    const refreshToken = await genarateeRfreshToken(findAdmin?.id);
-    const updateUser = await User.findByIdAndUpdate(
+    const refreshToken =  genarateeRfreshToken(findAdmin?._id);
+    const updateuser = await User.findByIdAndUpdate(
       findAdmin.id,
       {
         refreshToken: refreshToken,
       },
-      {
-        naw: true,
-      }
+      { new: true }
     );
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       maxAge: 72 * 60 * 60 * 1000,
     });
-
     res.json({
-      id: findAdmin?.id,
+      _id: findAdmin?._id,
       firstname: findAdmin?.firstname,
       lastname: findAdmin?.lastname,
       email: findAdmin?.email,
       mobile: findAdmin?.mobile,
-      token: generateToken(findAdmin?.id),
+      token: generateToken(findAdmin?._id),
     });
   } else {
-    throw new Error("Invalid credential");
+    throw new Error("Invalid Credentials");
   }
 });
 
@@ -189,7 +187,7 @@ const saveAddress = asyncHandler(async (req, res) => {
 //get ALL User
 const getAllUser = asyncHandler(async (req, res) => {
   try {
-    const getUser = await User.find();
+    const getUser = await User.find().populate("wishlist");
     res.json(getUser);
   } catch (error) {
     throw new Error(error);
@@ -303,6 +301,7 @@ const forgetPasswordToken = asyncHandler(async (req, res) => {
   }
 });
 
+//reset password token
 const resetPasswordToken = asyncHandler(async (req, res) => {
   const { password } = req.body;
   const { token } = req.params;
@@ -476,18 +475,34 @@ const craeteOrder = asyncHandler(async (req, res) => {
   }
 });
 
-//get order
-const getOrder = asyncHandler(async (req, res) => {
-  const { _id } = req.user;
-  mongoValidateId(_id);
+//get sigle order
+const getOrders = asyncHandler(async (req, res) => {
+  const { id } = req.user;
+  mongoValidateId(id);
   try {
-    const userOrder = await Order.findOne({ orderBy: _id })
+    const userorders = await Order.findOne({ orderBy: id })
       .populate("products.product")
+      .populate("orderBy")
+      .exec();
+    res.json(userorders);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
+//get all order
+const getAllOrder = asyncHandler(async (req, res) => {
+
+  try {
+    const userOrder = await Order.find()
+      .populate("products.product")
+      .populate("orderBy")
       .exec();
     res.json(userOrder);
   } catch (error) {
     throw new Error(error);
   }
+
 });
 
 //update Order
@@ -534,6 +549,7 @@ module.exports = {
   emptyCart,
   applyCoupon,
   craeteOrder,
-  getOrder,
+  getOrders,
+  getAllOrder,
   updateOrderStatus,
 };

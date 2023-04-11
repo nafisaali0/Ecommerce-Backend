@@ -64,6 +64,7 @@ const getAllProductCatagory = asyncHandler(async (req, res) => {
   }
 });
 
+
 module.exports = {
   createProductCatagory,
   updateSingleProductCatagory,

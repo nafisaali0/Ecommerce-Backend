@@ -22,8 +22,9 @@ const {
   emptyCart,
   applyCoupon,
   craeteOrder,
-  getOrder,
+  getAllOrder,
   updateOrderStatus,
+  getOrders,
 } = require("../controller/userCntrl");
 const { authMiddleware, isAdmin } = require("../middlewares/authMiddleware");
 
@@ -43,7 +44,8 @@ router.get("/refresh-token", handleRefreshToken);
 router.get("/logout", logoutUser);
 router.get("/all-wishlist", authMiddleware, getWishlist);
 router.get("/all-cart", authMiddleware, getUserCart);
-router.get("/all-order", authMiddleware, getOrder);
+router.get("/get-orders", authMiddleware, getOrders);
+router.get("/all-order", authMiddleware, isAdmin, getAllOrder);
 router.get("/:id", authMiddleware, isAdmin, getSingleUser);
 
 router.delete("/empty-cart", authMiddleware, emptyCart);
