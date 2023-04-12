@@ -1,8 +1,8 @@
 const { default: mongoose } = require("mongoose");
-
+const MONGO_DB = process.env.DATABASE_URL
 const dbConnect = () => {
   try {
-    const connection = mongoose.connect(process.env.DATABASE_URL, {
+    const connection = mongoose.connect(`${MONGO_DB}`, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
