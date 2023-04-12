@@ -4,6 +4,7 @@ const dbConnect = require("./config/dbConnect");
 const app = express();
 const port = process.env.PORT || 4000;
 const cors = require("cors");
+
 //routes
 const authRouter = require("./routes/authRoutes");
 const productcatagoryRouter = require("./routes/productcatagoryRoutes");
