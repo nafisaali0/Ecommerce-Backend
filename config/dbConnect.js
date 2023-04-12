@@ -1,8 +1,8 @@
 const { default: mongoose } = require("mongoose");
-const MONGODB_URI = process.env.DATABASE_URL;
-const dbConnect = async () => {
+
+const dbConnect = () => {
   try {
-    await mongoose.connect(MONGODB_URI, {
+    const connection = mongoose.connect(process.env.DATABASE_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
@@ -11,6 +11,4 @@ const dbConnect = async () => {
     console.log("datbase Error");
   }
 };
-
-
 module.exports = dbConnect;
