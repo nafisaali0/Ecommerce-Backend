@@ -17,7 +17,7 @@ const updateSingleBrand = asyncHandler(async (req, res) => {
   const { id } = req.params;
   mongoValidateId(id);
   try {
-    const updatedBrand = await Brand.findOneAndUpdate(
+    const updatedBrand = await Brand.findByIdAndUpdate(
       id,
       req.body,
       {
@@ -35,7 +35,7 @@ const deleteSingleBrand = asyncHandler(async (req, res) => {
   const { id } = req.params;
   mongoValidateId(id);
   try {
-    const deleteBrand = await Brand.findOneAndDelete(id);
+    const deleteBrand = await Brand.findByIdAndDelete(id);
     res.json(deleteBrand);
   } catch (error) {
     throw new Error(error);
