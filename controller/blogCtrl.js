@@ -19,7 +19,7 @@ const updateSingleBlog = asyncHandler(async (req, res) => {
   const { id } = req.params;
   mongoValidateId(id);
   try {
-    const updatedBlog = await Blog.findOneAndUpdate(id, req.body, {
+    const updatedBlog = await Blog.findByIdAndUpdate(id, req.body, {
       new: true,
     });
     res.json(updatedBlog);
@@ -64,7 +64,7 @@ const deleteSingleBlog = asyncHandler(async (req, res) => {
   const { id } = req.params;
   mongoValidateId(id);
   try {
-    const deleteBlog = await Blog.findOneAndDelete(id);
+    const deleteBlog = await Blog.findByIdAndDelete(id);
     res.json(deleteBlog);
   } catch (error) {
     throw new Error(error);

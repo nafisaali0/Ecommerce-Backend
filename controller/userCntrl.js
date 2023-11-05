@@ -13,6 +13,8 @@ const crypto = require("crypto");
 const uniqid = require("uniqid");
 const { json } = require("body-parser");
 
+
+
 //regester new user
 const createUser = asyncHandler(async (req, res) => {
   const email = req.body.email;
@@ -342,9 +344,9 @@ const userCart = asyncHandler(async (req, res) => {
     //check if user is already in cart
     const aleadyExistCart = await Cart.findOne({ orderBy: user.id });
     console.log(aleadyExistCart);
-    // if (aleadyExistCart) {
-    //   aleadyExistCart.remove();
-    // }
+    if (aleadyExistCart) {
+      aleadyExistCart.remove();
+    }
     for (let i = 0; i < cart.length; i++) {
       let object = {};
       object.product = cart[i].id;
@@ -505,6 +507,21 @@ const getAllOrder = asyncHandler(async (req, res) => {
 
 });
 
+//get orser by user id
+const getOrderByUserId = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  validateMongoDbId(id);
+  try {
+    const userorders = await Order.findOne({ orderby: id })
+      .populate("products.product")
+      .populate("orderby")
+      .exec();
+    res.json(userorders);
+  } catch (error) {
+    throw new Error(error);
+  }
+});
+
 //update Order
 const updateOrderStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
@@ -551,5 +568,6 @@ module.exports = {
   craeteOrder,
   getOrders,
   getAllOrder,
+  getOrderByUserId,
   updateOrderStatus,
 };

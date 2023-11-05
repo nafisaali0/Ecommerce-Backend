@@ -23,6 +23,7 @@ const {
   applyCoupon,
   craeteOrder,
   getAllOrder,
+  getOrderByUserId,
   updateOrderStatus,
   getOrders,
 } = require("../controller/userCntrl");
@@ -46,6 +47,7 @@ router.get("/all-wishlist", authMiddleware, getWishlist);
 router.get("/all-cart", authMiddleware, getUserCart);
 router.get("/get-orders", authMiddleware, getOrders);
 router.get("/all-order", authMiddleware, isAdmin, getAllOrder);
+router.post("/getorderbyuser/:id", authMiddleware, isAdmin, getOrderByUserId);
 router.get("/:id", authMiddleware, isAdmin, getSingleUser);
 
 router.delete("/empty-cart", authMiddleware, emptyCart);

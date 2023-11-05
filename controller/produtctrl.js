@@ -26,7 +26,7 @@ const updateSingleProduct = asyncHandler(async (req, res) => {
     if (req.body.title) {
       req.body.slug = slugify(req.body.title);
     }
-    const updatedProduct = await Product.findOneAndUpdate(id, req.body, {
+    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
       new: true,
     });
     res.json(updatedProduct);
@@ -40,7 +40,7 @@ const deleteSingleProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   mongoValidateId(id);
   try {
-    const deleteProduct = await Product.findOneAndDelete(id);
+    const deleteProduct = await Product.findByIdAndDelete(id);
     res.json(deleteProduct);
   } catch (error) {
     throw new Error(error);
@@ -82,13 +82,14 @@ const getAllProducts = asyncHandler(async (req, res) => {
       query = query.sort("-createdAt");
     }
 
-    //Field
+    // limiting the fields
     if (req.query.fields) {
       const fields = req.query.fields.split(",").join(" ");
       query = query.select(fields);
     } else {
       query = query.select("-__v");
     }
+
 
     //pagination
     const page = req.query.page;
@@ -205,8 +206,6 @@ const rating = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
-
-
 
 module.exports = {
   createProduct,

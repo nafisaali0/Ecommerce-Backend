@@ -17,7 +17,7 @@ const updateSingleEnquary = asyncHandler(async (req, res) => {
   const { id } = req.params;
   mongoValidateId(id);
   try {
-    const updatedEnquary = await Enquary.findOneAndUpdate(
+    const updatedEnquary = await Enquary.findByIdAndUpdate(
       id,
       req.body,
       {
@@ -35,7 +35,7 @@ const deleteSingleEnquary = asyncHandler(async (req, res) => {
   const { id } = req.params;
   mongoValidateId(id);
   try {
-    const deleteEnquary = await Enquary.findOneAndDelete(id);
+    const deleteEnquary = await Enquary.findByIdAndDelete(id);
     res.json(deleteEnquary);
   } catch (error) {
     throw new Error(error);

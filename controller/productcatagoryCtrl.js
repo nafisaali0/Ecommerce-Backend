@@ -17,7 +17,7 @@ const updateSingleProductCatagory = asyncHandler(async (req, res) => {
   const { id } = req.params;
   mongoValidateId(id);
   try {
-    const updatedProductCatagory = await ProductCatagory.findOneAndUpdate(
+    const updatedProductCatagory = await ProductCatagory.findByIdAndUpdate(
       id,
       req.body,
       {
@@ -35,7 +35,7 @@ const deleteSingleProductCatagory = asyncHandler(async (req, res) => {
   const { id } = req.params;
   mongoValidateId(id);
   try {
-    const deleteProductCatagory = await ProductCatagory.findOneAndDelete(id);
+    const deleteProductCatagory = await ProductCatagory.findByIdAndDelete(id);
     res.json(deleteProductCatagory);
   } catch (error) {
     throw new Error(error);

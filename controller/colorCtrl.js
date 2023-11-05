@@ -17,7 +17,7 @@ const updateSingleColor = asyncHandler(async (req, res) => {
   const { id } = req.params;
   mongoValidateId(id);
   try {
-    const updatedColor = await Color.findOneAndUpdate(
+    const updatedColor = await Color.findByIdAndUpdate(
       id,
       req.body,
       {
@@ -35,7 +35,7 @@ const deleteSingleColor = asyncHandler(async (req, res) => {
   const { id } = req.params;
   mongoValidateId(id);
   try {
-    const deleteColor = await Color.findOneAndDelete(id);
+    const deleteColor = await Color.findByIdAndDelete(id);
     res.json(deleteColor);
   } catch (error) {
     throw new Error(error);
