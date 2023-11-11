@@ -110,6 +110,7 @@ const getAllProducts = asyncHandler(async (req, res) => {
 //add to wishlist
 const addToWishList = asyncHandler(async (req, res) => {
   const { id } = req.user;
+  console.log(req.user)
   const { productId } = req.body;
   mongoValidateId(id);
   try {
@@ -118,6 +119,8 @@ const addToWishList = asyncHandler(async (req, res) => {
     const alreadyAdded = user.wishlist.find(
       (id) => id.toString() === productId
     );
+
+    console.log("alreadyAdded",alreadyAdded)
 
     if (alreadyAdded) {
       let user = await User.findByIdAndUpdate(
