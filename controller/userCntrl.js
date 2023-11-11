@@ -13,8 +13,6 @@ const crypto = require("crypto");
 const uniqid = require("uniqid");
 const { json } = require("body-parser");
 
-
-
 //regester new user
 const createUser = asyncHandler(async (req, res) => {
   const email = req.body.email;
@@ -68,7 +66,7 @@ const loginAdmin = asyncHandler(async (req, res) => {
   const findAdmin = await User.findOne({ email });
   if (findAdmin.role !== "admin") throw new Error("Not Authorised");
   if (findAdmin && (await findAdmin.isPasswordmatched(password))) {
-    const refreshToken =  genarateeRfreshToken(findAdmin?._id);
+    const refreshToken = genarateeRfreshToken(findAdmin?._id);
     const updateuser = await User.findByIdAndUpdate(
       findAdmin.id,
       {
@@ -336,48 +334,77 @@ const getWishlist = asyncHandler(async (req, res) => {
 //user Cart
 const userCart = asyncHandler(async (req, res) => {
   const { cart } = req.body;
-  const { id } = req.user;
-  mongoValidateId(id);
+  const { _id } = req.user;
+  mongoValidateId(_id);
+
   try {
     let products = [];
-    const user = await User.findById(id);
-    //check if user is already in cart
-    const aleadyExistCart = await Cart.findOne({ orderBy: user.id });
-    console.log(aleadyExistCart);
-    if (aleadyExistCart) {
-      aleadyExistCart.remove();
+    const user = await User.findById(_id);
+
+    // Check if the user already has a cart
+    let userCart = await Cart.findOne({ orderBy: user._id });
+
+    if (userCart) {
+      // User already has a cart, clear it
+      userCart.products = [];
+    } else {
+      // Create a new cart for the user
+      userCart = new Cart({
+        orderBy: user._id,
+      });
     }
+
     for (let i = 0; i < cart.length; i++) {
-      let object = {};
-      object.product = cart[i].id;
-      object.count = cart[i].count;
-      object.color = cart[i].color;
-      let getPrice = await Product.findById(cart[i].id).select("price").exec();
-      object.price = getPrice.price;
-      products.push(object);
+      const product = await Product.findById(cart[i]._id).select("price quantity");
+      if (!product) {
+        console.error(`Product with _id ${cart[i]._id} not found`);
+        continue; // Skip this iteration if product not found
+      }
+
+      if (product.quantity < cart[i].count) {
+        // Check if available quantity is sufficient
+        console.error(`Not enough quantity available for product with _id ${cart[i]._id}`);
+        continue; // Skip this iteration if quantity is insufficient
+      }
+
+      const cartItem = {
+        product: cart[i]._id,
+        count: cart[i].count,
+        color: cart[i].color,
+        price: product.price,
+      };
+
+      products.push(cartItem);
+
+      // Deduct the quantity from the available stock
+      product.quantity -= cart[i].count;
+      await product.save();
     }
-    let cartTotal = 0;
-    for (i = 0; i < products.length; i++) {
-      cartTotal = cartTotal + products[i].price * products[i].count;
-    }
-    let newcart = await new Cart({
-      products,
-      cartTotal,
-      orderBy: user.id,
-    }).save();
-    res.json(newcart);
-    console.log(products, cartTotal);
+
+    userCart.products = products;
+
+    // Calculate cart total
+    userCart.cartTotal = userCart.products.reduce(
+      (total, item) => total + item.price * item.count,
+      0
+    );
+
+    await userCart.save();
+
+    res.json(userCart);
   } catch (error) {
-    throw new Error(error);
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
+
 //get all cart
 const getUserCart = asyncHandler(async (req, res) => {
-  const { id } = req.user;
-  mongoValidateId(id);
+  const { _id } = req.user;
+  mongoValidateId(_id);
   try {
-    const cart = await Cart.findOne({ orderBy: id }).populate(
+    const cart = await Cart.findOne({ orderBy: _id }).populate(
       "products.product"
       // "id title price totalAfterDiscount"
     );
@@ -437,29 +464,41 @@ const craeteOrder = asyncHandler(async (req, res) => {
   const { cashOnDelevary, couponApplied } = req.body;
   const { _id } = req.user;
   mongoValidateId(_id);
+
   try {
     if (!cashOnDelevary) throw new Error("Create Cash On Delevary Failed");
     const user = await User.findById(_id);
     let userCart = await Cart.findOne({ orderBy: user._id });
-    let finalAmmount = 0;
-    if (couponApplied && userCart.totalAfterDiscount) {
-      finalAmmount = userCart.totalAfterDiscount;
-    } else {
-      finalAmmount = userCart.cartTotal;
+
+    if (!userCart) {
+      // Create a new cart for the user
+      userCart = await new Cart({
+        orderBy: user._id, // Fix the variable name here
+      }).save();
     }
+
+    const finalAmmount =
+      couponApplied && userCart.totalAfterDiscount
+        ? userCart.totalAfterDiscount
+        : userCart.cartTotal;
+
+    const amount = finalAmmount ? parseFloat(finalAmmount) : 0; // Fix the variable name here
+
+    console.log("Final Amount:", finalAmmount);
     let newOrder = await new Order({
       products: userCart.products,
       paymentIntent: {
         id: uniqid(),
         method: "COD",
-        amount: finalAmmount,
+        amount: amount, // Fix the variable name here
         status: "Cash On Delevary",
-        created: Date.now,
-        currency: "usd",
+        created: Date.now(),
+        currency: "usd", // Fix the variable name here
       },
       orderBy: user._id,
       orderStatus: "Cash On Delevary",
     }).save();
+    res.json(newOrder);
 
     let update = userCart.products.map((item) => {
       return {
@@ -476,6 +515,7 @@ const craeteOrder = asyncHandler(async (req, res) => {
     throw new Error(error);
   }
 });
+
 
 //get sigle order
 const getOrders = asyncHandler(async (req, res) => {
@@ -494,7 +534,6 @@ const getOrders = asyncHandler(async (req, res) => {
 
 //get all order
 const getAllOrder = asyncHandler(async (req, res) => {
-
   try {
     const userOrder = await Order.find()
       .populate("products.product")
@@ -504,18 +543,18 @@ const getAllOrder = asyncHandler(async (req, res) => {
   } catch (error) {
     throw new Error(error);
   }
-
 });
 
 //get orser by user id
 const getOrderByUserId = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  validateMongoDbId(id);
+  mongoValidateId(id);
   try {
-    const userorders = await Order.findOne({ orderby: id })
+    const userorders = await Order.findOne({ orderBy: id })
       .populate("products.product")
-      .populate("orderby")
+      .populate("orderBy")
       .exec();
+      console.log(userorders)
     res.json(userorders);
   } catch (error) {
     throw new Error(error);
@@ -532,13 +571,13 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
       id,
       {
         orderStatus: status,
-        paymentIntent:{
-          status:status,
-        }
+        paymentIntent: {
+          status: status,
+        },
       },
       { new: true }
     );
-    res.json(findOrder)
+    res.json(findOrder);
   } catch (error) {
     throw new Error(error);
   }

@@ -63,7 +63,7 @@ const getSingleCoupon = asyncHandler(async (req, res) => {
 module.exports = {
   createCoupon,
   updateSingleCoupon,
-  deleteSingleCoupon,
   getSingleCoupon,
   getAllCoupon,
+  deleteSingleCoupon,
 };

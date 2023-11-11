@@ -50,6 +50,9 @@ const userSchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
+    refreshToken: {
+      type: String,
+    },
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpired: Date,

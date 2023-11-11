@@ -16,18 +16,18 @@ const cartSchema = new mongoose.Schema(
     ],
     cartTotal: Number,
     totalAfterDiscount: Number,
-    orderStatus: {
-      type: String,
-      default: "Not Processed",
-      enum: [
-        "Not Processed",
-        "Cash On Delevary",
-        "Processing",
-        "Dispathed",
-        "Cancelled",
-        "Delivered",
-      ],
-    },
+    // orderStatus: {
+    //   type: String,
+    //   default: "Not Processed",
+    //   enum: [
+    //     "Not Processed",
+    //     "Cash On Delevary",
+    //     "Processing",
+    //     "Dispathed",
+    //     "Cancelled",
+    //     "Delivered",
+    //   ],
+    // },
     orderBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

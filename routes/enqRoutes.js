@@ -11,10 +11,8 @@ const router = express.Router();
 
 router.post("/", createEnquary);
 router.put("/:id", authMiddleware, isAdmin, updateSingleEnquary);
-
 router.get("/:id", getSingleEnquary);
-router.get("/", getAllEnquary);
-
 router.delete("/:id", authMiddleware, isAdmin, deleteSingleEnquary);
+router.get("/", getAllEnquary);
 
 module.exports = router;
