@@ -26,45 +26,39 @@ const createUser = asyncHandler(async (req, res) => {
   }
 });
 
-// login user function
-const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const findUser = await User.findOne({ email: email });
+//login user function
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  const findUser = await User.findOne({ email: email });
 
-    if (findUser && (await findUser.isPasswordmatched(password))) {
-      const refreshToken = await generateRefreshToken(findUser?.id);
-      const updateUser = await User.findByIdAndUpdate(
-        findUser.id,
-        {
-          refreshToken: refreshToken,
-        },
-        {
-          new: true,
-        }
-      );
+  if (findUser && (await findUser.isPasswordmatched(password))) {
+    const refreshToken = await genarateeRfreshToken(findUser?.id);
+    const updateUser = await User.findByIdAndUpdate(
+      findUser.id,
+      {
+        refreshToken: refreshToken,
+      },
+      {
+        naw: true,
+      }
+    );
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      maxAge: 72 * 60 * 60 * 1000,
+    });
 
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        maxAge: 72 * 60 * 60 * 1000,
-      });
-
-      res.json({
-        id: findUser?.id,
-        firstname: findUser?.firstname,
-        lastname: findUser?.lastname,
-        email: findUser?.email,
-        mobile: findUser?.mobile,
-        token: generateToken(findUser?.id),
-      });
-    } else {
-      throw new Error("Invalid credentials");
-    }
-  } catch (error) {
-    console.error("Error in loginUser:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.json({
+      id: findUser?.id,
+      firstname: findUser?.firstname,
+      lastname: findUser?.lastname,
+      email: findUser?.email,
+      mobile: findUser?.mobile,
+      token: generateToken(findUser?.id),
+    });
+  } else {
+    throw new Error("Invalid credential");
   }
-};
+});
 
 //login Admin function
 const loginAdmin = asyncHandler(async (req, res) => {
