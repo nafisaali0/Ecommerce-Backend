@@ -4,13 +4,13 @@ const mongoose = require('mongoose'); // Erase if already required
 var couponSchema = new mongoose.Schema({
     name:{
         type:String,
-        required:true,
+        // required:true,
         unique:true,
         uppercase:true,
     },
     expiery:{
         type: Date,
-        required:true,
+        // required:true,
     },
     discount:{
         type:Number,

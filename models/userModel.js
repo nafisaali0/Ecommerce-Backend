@@ -53,6 +53,16 @@ const userSchema = new mongoose.Schema(
     refreshToken: {
       type: String,
     },
+    coins: {
+      type: Number,
+      default: 0,
+    },
+    images: [
+      {
+        public_id: String,
+        url: String,
+      },
+    ],
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpired: Date,

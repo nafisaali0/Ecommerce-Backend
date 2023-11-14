@@ -34,15 +34,19 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    reedim: {
+      type: Number,
+      required: true,
+    },
     sold: {
       type: Number,
       default: 0,
     },
     images: [
       {
-        public_id:String,
-        url:String,
-      }
+        public_id: String,
+        url: String,
+      },
     ],
     color: [],
     tags: String,
