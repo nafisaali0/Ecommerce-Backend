@@ -423,6 +423,7 @@ const craeteOrder = asyncHandler(async (req, res) => {
     totalPrice,
     totalPriceAfterDiscount,
     redeemCoins,
+    status,
   } = req.body;
   const { _id } = req.user;
   mongoValidateId(_id);
@@ -443,6 +444,7 @@ const craeteOrder = asyncHandler(async (req, res) => {
       orderItems,
       totalPrice,
       totalPriceAfterDiscount,
+      status: status,
       coinsRedeemed: deductedCoins,
     });
     res.json({ order, success: true });
@@ -460,6 +462,7 @@ const getMyOrder = asyncHandler(async (req, res) => {
       .populate("user")
       .populate("orderItems.product");
     res.json(order);
+    console.log("order",order)
   } catch (error) {
     throw new Error(error);
   }

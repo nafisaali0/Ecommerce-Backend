@@ -71,6 +71,11 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       default: 10, // Assuming 10 coins per order
     },
+    status: {
+      type: String,
+      default: "ordered",
+      enum: ["ordered", "in progress", "delivered", "canceled"],
+    },
     paidAt: {
       type: Date,
       default: Date.now(),
@@ -82,10 +87,6 @@ const orderSchema = new mongoose.Schema(
     totalPriceAfterDiscount: {
       type: Number,
       required: true,
-    },
-    orderStatus: {
-      type: String,
-      Default: "ordered",
     },
   },
   {
